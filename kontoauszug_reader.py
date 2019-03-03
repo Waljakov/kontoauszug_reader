@@ -6,7 +6,9 @@
 # um Ein- und Ausgehendes Geld mit Tags einzuordnen und entsprechend darzustellen
 
 import pandas as pd
+pd.set_option("display.max_colwidth", 10000)
 import numpy as np
+import matplotlib.pyplot as plt
 from functions import *
 
 # Variables
@@ -39,7 +41,28 @@ for key,val in indicators.items():
     addTag(df, key, val, searchIndicator)
 
 # Filter
-filtered = filter(df, date_col, "2019-02-01","2019-02-28", ["essen", "fixkosten"])
-pd.set_option("display.max_colwidth", 10000)
-print(filtered.loc[:,[date_col, sales_col, "tags"]].to_string)
-print("Summe: " + filtered[sales_col].sum().astype(str) + "EUR")
+date_start = ""
+date_end = ""
+tags = ["essen", "fixkosten", "paypal", "amazon"]
+if date_start == "":
+    date_start = df[date_col].min()
+else:
+    date_start = pd.to_datetime(date_start, format=dateformat) 
+if date_end == "":
+    date_end = df[date_col].max()
+else: 
+    date_end = pd.to_datetime(date_end, format=dateformat) 
+filtered = filter(df, date_col, date_start, date_end, tags)
+UmsatzByTags=[]
+for item in tags:
+    UmsatzByTags.append(np.abs(filtered.loc[filtered["tags"].str.contains(item), sales_col].sum()))
+print(UmsatzByTags)
+plot_df= pd.DataFrame({ sales_col: UmsatzByTags }, index=[tags])
+
+# Pie Chart
+plt.xkcd()
+ax =plot_df.plot(y=sales_col, labels=tags, kind="pie", autopct="%1.1f%%", figsize=(5,5))
+ax.set_ylabel("")
+ax.set_title("Ausgaben " + date_start.strftime("%d.%m.%Y") + " - " + date_end.strftime("%d.%m.%Y"))
+ax.get_legend().remove()
+plt.show()
