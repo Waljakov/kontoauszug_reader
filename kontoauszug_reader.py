@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from functions import *
 
 # Variables
-kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-03-02-16-34-32.csv"
+kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-04-03-22-55-11.csv"
 start_row = 6 # int; first column to read in
 separator = ";"
 searchIndicator = "Verwendungszweck" # str; search this column for indicators to set tags
@@ -21,12 +21,13 @@ dateformat = "%d.%m.%Y" # str; specify how the date is formatted
 drop_cols = ["Wertstellungstag"] # str-array; unimportand columns that will be deleted
 sales_col = "Umsatz" # str; column containing sales
 indicators = {
-    "essen" : ["nahkauf", "Schmaelzle", "Alnatura", "SCHECK-IN"],
-    "handy" : ["1u1 Telecom GmbH"],
+    "essen" : ["nahkauf", "lidl", "unverpackt", "edeka", "Schmaelzle", "aldi", "Alnatura", "SCHECK-IN", "real", "studierendenwerk karlsruhe", "rewe"],
+    "kleidung" : ["Karstadt sports gmbh", "p+c", "reno", "basislager", "h+m", "decathlon"],
+    "stadtmobil" : ["stadtmobil Carsharing GmbH"],
     "paypal": ["Paypal"],
     "amazon": ["AMAZON"],
-    "geldabheben" : ["KARTE 100041520", "KARTE 100038090"],
-    "fixkosten" : ["1u1 Telecom GmbH", "Kontaktlinsen", "WOHNUNG", "Katzenversicherung", "Techniker Krankenkasse"]
+    "geldabheben" : ["KARTE "],
+    "fixkosten" : ["1u1 Telecom GmbH", "Kontaktlinsen", "spotify",  "WOHNUNG", "Katzenversicherung", "Techniker Krankenkasse"]
 }
 
 # Prepare Dataframe
@@ -39,11 +40,14 @@ df[sales_col] = df[sales_col].astype(float)
 df["tags"] = "" 
 for key,val in indicators.items():
     addTag(df, key, val, searchIndicator)
+df.loc[df[sales_col] > 0, "tags"] += " " + "einnahmen"
+df.loc[df["tags"] == "", "tags"] += " " + "sonstiges"
+df.loc[df[sales_col] < 0, "tags"] += " " + "ausgaben"
 
 # Filter
-date_start = ""
-date_end = ""
-tags = ["essen", "fixkosten", "paypal", "amazon"]
+date_start = "03.04.2017"
+date_end = "03.8.2017"
+tags = ["essen", "kleidung", "stadtmobil", "fixkosten", "paypal", "amazon",  "geldabheben", "sonstiges"]
 if date_start == "":
     date_start = df[date_col].min()
 else:
@@ -52,10 +56,12 @@ if date_end == "":
     date_end = df[date_col].max()
 else: 
     date_end = pd.to_datetime(date_end, format=dateformat) 
-filtered = filter(df, date_col, date_start, date_end, tags)
+filtered = filter(df, date_col, date_start, date_end)
 UmsatzByTags=[]
 for item in tags:
     UmsatzByTags.append(np.abs(filtered.loc[filtered["tags"].str.contains(item), sales_col].sum()))
+UmsatzByTags.append(filtered.loc[filtered["tags"].str.contains("einnahmen"), sales_col].sum() + filtered.loc[filtered["tags"].str.contains("ausgaben"), sales_col].sum())
+tags.append("gewinn")
 print(UmsatzByTags)
 plot_df= pd.DataFrame({ sales_col: UmsatzByTags }, index=[tags])
 
