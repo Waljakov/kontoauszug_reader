@@ -45,8 +45,8 @@ df.loc[df["tags"] == "", "tags"] += " " + "sonstiges"
 df.loc[df[sales_col] < 0, "tags"] += " " + "ausgaben"
 
 # Filter
-date_start = "03.04.2017"
-date_end = "03.8.2017"
+date_start = "03.03.2019"
+date_end = ""
 tags = ["essen", "kleidung", "stadtmobil", "fixkosten", "paypal", "amazon",  "geldabheben", "sonstiges"]
 if date_start == "":
     date_start = df[date_col].min()
@@ -62,8 +62,10 @@ for item in tags:
     UmsatzByTags.append(np.abs(filtered.loc[filtered["tags"].str.contains(item), sales_col].sum()))
 UmsatzByTags.append(filtered.loc[filtered["tags"].str.contains("einnahmen"), sales_col].sum() + filtered.loc[filtered["tags"].str.contains("ausgaben"), sales_col].sum())
 tags.append("gewinn")
-print(UmsatzByTags)
 plot_df= pd.DataFrame({ sales_col: UmsatzByTags }, index=[tags])
+print(plot_df.sort_values(sales_col))
+print("-------------------------")
+print("Gesamt     " + plot_df[sales_col].sum().astype(str))
 
 # Pie Chart
 plt.xkcd()
