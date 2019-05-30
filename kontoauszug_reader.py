@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from functions import *
 
 # Variables
-kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-04-03-22-55-11.csv"
+kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-05-30-23-11-58.csv"
 start_row = 6 # int; first column to read in
 separator = ";"
 searchIndicator = "Verwendungszweck" # str; search this column for indicators to set tags
@@ -45,7 +45,7 @@ df.loc[df["tags"] == "", "tags"] += " " + "sonstiges"
 df.loc[df[sales_col] < 0, "tags"] += " " + "ausgaben"
 
 # Filter
-date_start = "03.03.2019"
+date_start = "03.03.2018"
 date_end = ""
 tags = ["essen", "kleidung", "stadtmobil", "fixkosten", "paypal", "amazon",  "geldabheben", "sonstiges"]
 if date_start == "":
@@ -67,7 +67,10 @@ print(plot_df.sort_values(sales_col))
 print("-------------------------")
 print("Gesamt     " + plot_df[sales_col].sum().astype(str))
 
+
 # Pie Chart
+if plot_df.loc["gewinn", sales_col].item() < 0: # dont show "gewinn" if negative
+    plot_df=plot_df.drop(["gewinn"])
 plt.xkcd()
 ax =plot_df.plot(y=sales_col, labels=tags, kind="pie", autopct="%1.1f%%", figsize=(5,5))
 ax.set_ylabel("")
