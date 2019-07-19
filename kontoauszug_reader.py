@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from functions import *
 
 # Variables
-kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-05-30-23-11-58.csv"
+kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-07-19-00-36-56.csv"
 start_row = 6 # int; first column to read in
 separator = ";"
 searchIndicator = "Verwendungszweck" # str; search this column for indicators to set tags
@@ -21,10 +21,11 @@ dateformat = "%d.%m.%Y" # str; specify how the date is formatted
 drop_cols = ["Wertstellungstag"] # str-array; unimportand columns that will be deleted
 sales_col = "Umsatz" # str; column containing sales
 indicators = {
-    "essen" : ["nahkauf", "lidl", "unverpackt", "edeka", "Schmaelzle", "aldi", "Alnatura", "SCHECK-IN", "real", "studierendenwerk karlsruhe", "rewe"],
+    "essen" : ["nahkauf", "lidl", "unverpackt", "edeka", "Schmaelzle", "aldi", "Alnatura", "SCHECK-IN", "real", "studierendenwerk karlsruhe", "rewe", "STREB WEIN- UND GETRAENKE"],
     "kleidung" : ["Karstadt sports gmbh", "p+c", "reno", "basislager", "h+m", "decathlon"],
     "stadtmobil" : ["stadtmobil Carsharing GmbH"],
     "paypal": ["Paypal"],
+    "katzen": ["Fressnapf"],
     "amazon": ["AMAZON"],
     "geldabheben" : ["KARTE "],
     "fixkosten" : ["1u1 Telecom GmbH", "Kontaktlinsen", "spotify",  "WOHNUNG", "Katzenversicherung", "Techniker Krankenkasse"]
@@ -45,9 +46,9 @@ df.loc[df["tags"] == "", "tags"] += " " + "sonstiges"
 df.loc[df[sales_col] < 0, "tags"] += " " + "ausgaben"
 
 # Filter
-date_start = "03.03.2018"
+date_start = "26.06.2019"
 date_end = ""
-tags = ["essen", "kleidung", "stadtmobil", "fixkosten", "paypal", "amazon",  "geldabheben", "sonstiges"]
+tags = ["essen", "kleidung", "katzen",  "stadtmobil", "fixkosten", "paypal", "amazon",  "geldabheben", "sonstiges"]
 if date_start == "":
     date_start = df[date_col].min()
 else:
@@ -65,8 +66,13 @@ tags.append("gewinn")
 plot_df= pd.DataFrame({ sales_col: UmsatzByTags }, index=[tags])
 print(plot_df.sort_values(sales_col))
 print("-------------------------")
-print("Gesamt     " + plot_df[sales_col].sum().astype(str))
+print("Gesamtausgaben  " + (-1*filtered.loc[filtered["tags"].str.contains("ausgaben"), sales_col].sum()).astype(str))
 
+Sonstiges_verwendung = filtered["tags"].str.contains("sonstiges")
+print("\nFolgende Umsätze befinden sich in Sonstiges:")
+print(filtered.loc[Sonstiges_verwendung, searchIndicator].str[:50] + "..." + "                    " + filtered.loc[Sonstiges_verwendung, sales_col].astype(str))
+print("\n")
+print("-------------------------")
 
 # Pie Chart
 if plot_df.loc["gewinn", sales_col].item() < 0: # dont show "gewinn" if negative
