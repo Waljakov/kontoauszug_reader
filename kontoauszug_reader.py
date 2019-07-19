@@ -10,6 +10,8 @@ pd.set_option("display.max_colwidth", 10000)
 import numpy as np
 import matplotlib.pyplot as plt
 from functions import *
+import warnings
+warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
 
 # Variables
 kontoauszug_path = "./kontoauszuege/umsaetze-325794-2019-07-19-00-36-56.csv"
@@ -64,15 +66,16 @@ for item in tags:
 UmsatzByTags.append(filtered.loc[filtered["tags"].str.contains("einnahmen"), sales_col].sum() + filtered.loc[filtered["tags"].str.contains("ausgaben"), sales_col].sum())
 tags.append("gewinn")
 plot_df= pd.DataFrame({ sales_col: UmsatzByTags }, index=[tags])
-print(plot_df.sort_values(sales_col))
+print("\n-------------------------")
+print(plot_df.drop('gewinn').sort_values(sales_col))
 print("-------------------------")
 print("Gesamtausgaben  " + (-1*filtered.loc[filtered["tags"].str.contains("ausgaben"), sales_col].sum()).astype(str))
+print("Gewinn          " + plot_df.loc['gewinn', sales_col].to_string(index=False))
 
 Sonstiges_verwendung = filtered["tags"].str.contains("sonstiges")
 print("\nFolgende Umsätze befinden sich in Sonstiges:")
 print(filtered.loc[Sonstiges_verwendung, searchIndicator].str[:50] + "..." + "                    " + filtered.loc[Sonstiges_verwendung, sales_col].astype(str))
-print("\n")
-print("-------------------------")
+print("\n-------------------------")
 
 # Pie Chart
 if plot_df.loc["gewinn", sales_col].item() < 0: # dont show "gewinn" if negative
